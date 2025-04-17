@@ -11,6 +11,8 @@ import csv
 import sys
 from pathlib import Path
 
+from elroy.api import Elroy
+
 
 def read_data(filename):
     """
@@ -88,6 +90,52 @@ def print_questions(data, output_format='text', output_file=None):
                 writer.writerow({field: entry[field] for field in fieldnames})
 
 
+def ingest_question_data(data, question_data_dir='data/question_data', dry_run=False):
+    """
+    Ingest question data using the Elroy API.
+
+    Args:
+        data (list): List of question entries
+        database_url (str): Database URL for the Elroy API
+        question_data_dir (str): Base directory containing question data
+        dry_run (bool): If True, print the operations without executing them
+    """
+    print(f"Ingesting data for {len(data)} questions...")
+
+    for entry in data:
+        question_id = entry['question_id']
+        question_dir = os.path.join(question_data_dir, question_id)
+        token = f"2025_04_17_{question_id}"
+        database_url = os.environ['ELROY_BENCHMARKING_DATABASE_URL']
+
+        # Check if the question directory exists
+        if not os.path.exists(question_dir):
+            print(f"Warning: Directory for question {question_id} not found at {question_dir}")
+            continue
+
+        print(f"Ingesting data for question {question_id}...")
+
+        if dry_run:
+            print(f"Would ingest directory: {question_dir} with token: {token}")
+        else:
+            try:
+                # Initialize Elroy API with the token and database URL
+                elroy = Elroy(token=token, database_url=database_url)
+
+                # Ingest the directory with all files
+                result = elroy.ingest_dir(
+                    address=question_dir,
+                    include=["*.txt"],  # Include all text files
+                    exclude=[],         # No exclusions
+                    recursive=False,    # No need for recursion as files are directly in the question directory
+                    force_refresh=True  # Force refresh to ensure all files are ingested
+                )
+
+                print(f"Successfully ingested {len(result)} files for question {question_id}")
+            except Exception as e:
+                print(f"Error ingesting data for question {question_id}: {str(e)}")
+
+
 def main():
     """Main function to parse arguments and process the data."""
     parser = argparse.ArgumentParser(description='Process LongMemEval data')
@@ -101,6 +149,12 @@ def main():
                         help='Output format (text or csv)')
     parser.add_argument('--output', type=str,
                         help='Output file for CSV format')
+    parser.add_argument('--ingest', action='store_true',
+                        help='Ingest question data into Elroy')
+    parser.add_argument('--question-data-dir', type=str, default='data/question_data',
+                        help='Directory containing question data (default: data/question_data)')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Print operations without executing them')
 
     args = parser.parse_args()
 
@@ -116,9 +170,16 @@ def main():
     # Filter the data
     filtered_data = filter_questions(data, args.type, args.limit)
     print(f"Displaying {len(filtered_data)} questions after filtering.")
-
     # Print the questions
     print_questions(filtered_data, args.format, args.output)
+
+    # Ingest question data if requested
+    if args.ingest:
+        ingest_question_data(
+            filtered_data,
+            args.question_data_dir,
+            args.dry_run
+        )
 
 
 if __name__ == "__main__":
