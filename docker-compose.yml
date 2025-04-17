@@ -51,8 +51,7 @@ services:
       - OPENAI_API_BASE=http://litellm:4000
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./data:/app/scripts/benchmarking/longmemeval/data
-      - ./:/app/scripts/benchmarking/longmemeval
+      - ./:/app/scripts/benchmarking/LongMemEval
     depends_on:
       - postgres
       - litellm
