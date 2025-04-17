@@ -96,7 +96,6 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
 
     Args:
         data (list): List of question entries
-        database_url (str): Database URL for the Elroy API
         question_data_dir (str): Base directory containing question data
         dry_run (bool): If True, print the operations without executing them
     """
@@ -106,7 +105,6 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
         question_id = entry['question_id']
         question_dir = os.path.join(question_data_dir, question_id)
         token = f"2025_04_17_{question_id}"
-        database_url = os.environ['ELROY_BENCHMARKING_DATABASE_URL']
 
         # Check if the question directory exists
         if not os.path.exists(question_dir):
@@ -120,7 +118,7 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
         else:
             try:
                 # Initialize Elroy API with the token and database URL
-                elroy = Elroy(token=token, database_url=database_url)
+                elroy = Elroy(token=token)
 
                 # Ingest the directory with all files
                 result = elroy.ingest_dir(
