@@ -56,7 +56,7 @@ services:
       - postgres
       - litellm
       - phoenix
-    entrypoint: ["python", "/app/scripts/benchmarking/LongMemEval/src/elroy_generate.py"]
+    entrypoint: ["python", "/app/scripts/benchmarking/LongMemEval/src/elroy_generate.py", "--ingest"]
 
   postgres:
     image: ankane/pgvector:v0.5.1

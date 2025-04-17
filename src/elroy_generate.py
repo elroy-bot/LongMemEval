@@ -90,7 +90,7 @@ def print_questions(data, output_format='text', output_file=None):
                 writer.writerow({field: entry[field] for field in fieldnames})
 
 
-def ingest_question_data(data, question_data_dir='data/question_data', dry_run=False):
+def ingest_question_data(data, question_data_dir, dry_run=False):
     """
     Ingest question data using the Elroy API.
 
@@ -108,8 +108,7 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
 
         # Check if the question directory exists
         if not os.path.exists(question_dir):
-            print(f"Warning: Directory for question {question_id} not found at {question_dir}")
-            continue
+            raise ValueError(f"Warning: Directory for question {question_id} not found at {question_dir}")
 
         print(f"Ingesting data for question {question_id}...")
 
@@ -126,7 +125,7 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
                     include=["*.txt"],  # Include all text files
                     exclude=[],         # No exclusions
                     recursive=False,    # No need for recursion as files are directly in the question directory
-                    force_refresh=True  # Force refresh to ensure all files are ingested
+                    force_refresh=False,
                 )
 
                 print(f"Successfully ingested {len(result)} files for question {question_id}")
@@ -135,10 +134,11 @@ def ingest_question_data(data, question_data_dir='data/question_data', dry_run=F
 
 
 def main():
+    DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
     """Main function to parse arguments and process the data."""
     parser = argparse.ArgumentParser(description='Process LongMemEval data')
-    parser.add_argument('--filename', type=str, default='data/longmemeval_s.json',
-                        help='Path to the JSON file (default: data/longmemeval_s.json)')
+    parser.add_argument('--filename', type=str, default=f'{DATA_DIR}/longmemeval_s.json',
+                        help=f'Path to the JSON file (default:{DATA_DIR}/longmemeval_s.json)')
     parser.add_argument('--type', type=str,
                         help='Filter by question type (e.g., single-session-user)')
     parser.add_argument('--limit', type=int,
@@ -149,7 +149,7 @@ def main():
                         help='Output file for CSV format')
     parser.add_argument('--ingest', action='store_true',
                         help='Ingest question data into Elroy')
-    parser.add_argument('--question-data-dir', type=str, default='data/question_data',
+    parser.add_argument('--question-data-dir', type=str, default=f'{DATA_DIR}/question_data',
                         help='Directory containing question data (default: data/question_data)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Print operations without executing them')
@@ -167,9 +167,6 @@ def main():
 
     # Filter the data
     filtered_data = filter_questions(data, args.type, args.limit)
-    print(f"Displaying {len(filtered_data)} questions after filtering.")
-    # Print the questions
-    print_questions(filtered_data, args.format, args.output)
 
     # Ingest question data if requested
     if args.ingest:
