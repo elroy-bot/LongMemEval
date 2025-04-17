@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 from elroy.api import Elroy
 
-QUESTIONS_TO_PROCESS = 10
+QUESTIONS_TO_PROCESS = 25
 
 
 def read_data(filename):
