@@ -28,7 +28,7 @@ def read_data(filename):
     Returns:
         list: Parsed JSON data
     """
-    with open(filename, 'r', encoding='utf-8') as f:
+    with open(filename, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data
 
@@ -49,8 +49,7 @@ def filter_questions(data, question_type=None, limit=None):
 
     # Filter by question type if specified
     if question_type:
-        filtered_data = [entry for entry in filtered_data
-                         if entry['question_type'] == question_type]
+        filtered_data = [entry for entry in filtered_data if entry["question_type"] == question_type]
 
     # Limit the number of questions if specified
     if limit and limit > 0:
@@ -59,7 +58,7 @@ def filter_questions(data, question_type=None, limit=None):
     return filtered_data
 
 
-def print_questions(data, output_format='text', output_file=None):
+def print_questions(data, output_format="text", output_file=None):
     """
     Print each question from the data.
 
@@ -68,7 +67,7 @@ def print_questions(data, output_format='text', output_file=None):
         output_format (str): Output format ('text' or 'csv')
         output_file (str, optional): Path to output file for CSV format
     """
-    if output_format == 'text':
+    if output_format == "text":
         for i, entry in enumerate(data):
             print(f"Question {i+1} (ID: {entry['question_id']}):")
             print(f"Type: {entry['question_type']}")
@@ -77,11 +76,11 @@ def print_questions(data, output_format='text', output_file=None):
             print(f"Date: {entry['question_date']}")
             print("-" * 50)
 
-    elif output_format == 'csv':
-        fieldnames = ['question_id', 'question_type', 'question', 'answer', 'question_date']
+    elif output_format == "csv":
+        fieldnames = ["question_id", "question_type", "question", "answer", "question_date"]
 
         if output_file:
-            with open(output_file, 'w', newline='', encoding='utf-8') as f:
+            with open(output_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for entry in data:
@@ -111,7 +110,7 @@ def ingest_question_data(data, question_data_dir, dry_run=False):
 
         print(f"ingesting question {idx + 1}/{len(data)}")
 
-        question_id = entry['question_id']
+        question_id = entry["question_id"]
         question_dir = os.path.join(question_data_dir, question_id)
         token = f"2025_04_17_{question_id}"
 
@@ -132,8 +131,8 @@ def ingest_question_data(data, question_data_dir, dry_run=False):
                 result = elroy.ingest_dir(
                     address=question_dir,
                     include=["*.txt"],  # Include all text files
-                    exclude=[],         # No exclusions
-                    recursive=False,    # No need for recursion as files are directly in the question directory
+                    exclude=[],  # No exclusions
+                    recursive=False,  # No need for recursion as files are directly in the question directory
                     force_refresh=False,
                 )
 
@@ -143,25 +142,27 @@ def ingest_question_data(data, question_data_dir, dry_run=False):
 
 
 def main():
-    DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
+    DATA_DIR = Path(__file__).resolve().parent.parent / "data"
     """Main function to parse arguments and process the data."""
-    parser = argparse.ArgumentParser(description='Process LongMemEval data')
-    parser.add_argument('--filename', type=str, default=f'{DATA_DIR}/longmemeval_s.json',
-                        help=f'Path to the JSON file (default:{DATA_DIR}/longmemeval_s.json)')
-    parser.add_argument('--type', type=str,
-                        help='Filter by question type (e.g., single-session-user)')
-    parser.add_argument('--limit', type=int,
-                        help='Limit the number of questions displayed')
-    parser.add_argument('--format', type=str, choices=['text', 'csv'], default='text',
-                        help='Output format (text or csv)')
-    parser.add_argument('--output', type=str,
-                        help='Output file for CSV format')
-    parser.add_argument('--ingest', action='store_true',
-                        help='Ingest question data into Elroy')
-    parser.add_argument('--question-data-dir', type=str, default=f'{DATA_DIR}/question_data',
-                        help='Directory containing question data (default: data/question_data)')
-    parser.add_argument('--dry-run', action='store_true',
-                        help='Print operations without executing them')
+    parser = argparse.ArgumentParser(description="Process LongMemEval data")
+    parser.add_argument(
+        "--filename",
+        type=str,
+        default=f"{DATA_DIR}/longmemeval_s.json",
+        help=f"Path to the JSON file (default:{DATA_DIR}/longmemeval_s.json)",
+    )
+    parser.add_argument("--type", type=str, help="Filter by question type (e.g., single-session-user)")
+    parser.add_argument("--limit", type=int, help="Limit the number of questions displayed")
+    parser.add_argument("--format", type=str, choices=["text", "csv"], default="text", help="Output format (text or csv)")
+    parser.add_argument("--output", type=str, help="Output file for CSV format")
+    parser.add_argument("--ingest", action="store_true", help="Ingest question data into Elroy")
+    parser.add_argument(
+        "--question-data-dir",
+        type=str,
+        default=f"{DATA_DIR}/question_data",
+        help="Directory containing question data (default: data/question_data)",
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Print operations without executing them")
 
     args = parser.parse_args()
 
@@ -179,11 +180,7 @@ def main():
 
     # Ingest question data if requested
     if args.ingest:
-        ingest_question_data(
-            filtered_data,
-            args.question_data_dir,
-            args.dry_run
-        )
+        ingest_question_data(filtered_data, args.question_data_dir, args.dry_run)
 
 
 if __name__ == "__main__":
